@@ -8,7 +8,7 @@ interface Draggable {
 interface DragTarget {
   dragOverHandler(event: DragEvent): void;
   dropHandler(event: DragEvent): void;
-  dargLeaveHandler(event: DragEvent): void;
+  dragLeaveHandler(event: DragEvent): void;
 }
 
 
@@ -196,11 +196,12 @@ class ProjectItem extends Component<HTMLUListElement, HTMLLIElement> implements 
   }
 
   @autobind
-  dragStartHandler(event: DragEvent): void {
-    console.log(event);
+  dragStartHandler(event: DragEvent) {
+    event.dataTransfer!.setData("text/plain", this.project.id);
+    event.dataTransfer!.effectAllowed = "move";
   }
 
-  dragEndHandler(_: DragEvent): void {
+  dragEndHandler(_: DragEvent) {
     console.log("DragEnd");
   }
 
@@ -229,20 +230,27 @@ class ProjectList
   constructor(private type: "active" | "finished") {
     super("project-list", "app", false, `${type}-projects`);
     this.assignedProjects = [];
+    
     this.configure();
     this.renderContent();
   }
 
   @autobind
-  dragOverHandler(_: DragEvent): void {
-    const listEl = this.element.querySelector("ul")!;
-    listEl.classList.add("droppable");
+  dragOverHandler(event: DragEvent) {
+    if (event.dataTransfer && event.dataTransfer.types[0] === "text/plain") {
+      event.preventDefault();
+      const listEl = this.element.querySelector("ul")!;
+      listEl.classList.add("droppable");
+    }
   }
 
-  dropHandler(_: DragEvent): void {}
+  
+  dropHandler(event: DragEvent) {
+    console.log(event);
+  }
 
   @autobind
-  dragLeaveHandler(_: DragEvent): void {
+  dragLeaveHandler(_: DragEvent) {
     const listEl = this.element.querySelector("ul")!;
     listEl.classList.remove("droppable");
   }
